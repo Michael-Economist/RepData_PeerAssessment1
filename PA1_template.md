@@ -15,15 +15,46 @@ The data for this report is available [here](https://d396qusza40orc.cloudfront.n
 
 ## Loading and preprocessing the data
 
-```{r setup}
+
+```r
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
+```
 
+```
+## Warning: package 'tidyverse' was built under R version 3.6.2
+```
+
+```
+## -- Attaching packages --------------------------------------------------------------------- tidyverse 1.3.0 --
+```
+
+```
+## v ggplot2 3.2.1     v purrr   0.3.3
+## v tibble  2.1.3     v dplyr   0.8.4
+## v tidyr   1.0.2     v stringr 1.4.0
+## v readr   1.3.1     v forcats 0.4.0
+```
+
+```
+## Warning: package 'tidyr' was built under R version 3.6.2
+```
+
+```
+## Warning: package 'dplyr' was built under R version 3.6.2
+```
+
+```
+## -- Conflicts ------------------------------------------------------------------------ tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()
+```
+
+```r
 ds <- read.csv("activity.csv")
 
 ds$date <- as.Date(ds$date)
-
 ```
 
 
@@ -37,8 +68,8 @@ For this part of the assignment, you can ignore the missing values in the datase
 * Calculate and report the mean and median of the total number of steps taken per day.  
 
 
-```{r steps-a-day}
 
+```r
 total.steps.day = aggregate(ds$steps, by=list(ds$date), FUN = sum)
 mean.steps.day = round(mean(total.steps.day$x, na.rm = TRUE),2)
 
@@ -47,12 +78,12 @@ median.steps = median(total.steps.day$x, na.rm = TRUE)
 hist(total.steps.day$x, main = "Histogram of total steps taken each day", 
      xlab = "Number of steps a day",
      ylab = "frequency")
-
-
 ```
 
-The mean number of steps a day is `r format(mean.steps.day)`.  
-The median number of steps is `r format(median.steps)`.
+![](PA1_template_files/figure-html/steps-a-day-1.png)<!-- -->
+
+The mean number of steps a day is 10766.19.  
+The median number of steps is 10765.
 
 
   
@@ -64,8 +95,8 @@ Which 5-minute interval, on average across all the days in the dataset, contains
 
 
 
-```{r steps-5-min}
 
+```r
 mean.steps.interval = aggregate(data = ds, steps~interval, FUN = mean, na.action = na.omit)
 
 max.steps <- arrange(mean.steps.interval, -steps)
@@ -77,10 +108,11 @@ plot(mean.steps.interval$interval,
      ylab = "Mean steps", 
      main = "Average Daily Activity Pattern", 
      type = "l")
-
 ```
 
-On average, the 5-minute interval with the most steps is the `r max.steps$interval[1]` interval.  
+![](PA1_template_files/figure-html/steps-5-min-1.png)<!-- -->
+
+On average, the 5-minute interval with the most steps is the 835 interval.  
 
 
 
@@ -97,8 +129,8 @@ Create a new dataset that is equal to the original dataset but with the missing 
 
 
 
-```{r imputing}
 
+```r
 num.of.missing <- sum(is.na(ds$steps))
 
 # If a step is missing, replace it with the average for that interval,
@@ -106,11 +138,9 @@ num.of.missing <- sum(is.na(ds$steps))
 ds <- mutate(ds, imputed.steps = ifelse(is.na(steps), 
                                              mean.steps.interval$steps[match(ds$interval,  mean.steps.interval$interval)],
                                              steps))
-
-
 ```
 
-There are `r num.of.missing` missing values in the dataset.  
+There are 2304 missing values in the dataset.  
   
 The missing values have been replaced by the mean of the interval.
 
@@ -122,8 +152,8 @@ What is the impact of imputing missing data on the estimates of the total daily 
 
 
 
-```{r hist-with-imputed}
 
+```r
 total.steps.day.imputed = aggregate(ds$imputed.steps, by=list(ds$date), FUN = sum)
 mean.steps.day.imputed = round(mean(total.steps.day.imputed$x, na.rm = FALSE),2)
 median.steps.imputed = median(total.steps.day.imputed$x, na.rm = FALSE)
@@ -131,12 +161,12 @@ median.steps.imputed = median(total.steps.day.imputed$x, na.rm = FALSE)
 hist(total.steps.day.imputed$x, main = "Histogram of total steps taken each day - with imputed data", 
      xlab = "Number of steps per day",
      ylab = "frequency")
-
-
 ```
 
-The mean of the imputed steps is `r format(mean.steps.day.imputed)` and the median of the imputed steps is `r format(median.steps.imputed)`.
-The imputed steps differ from the original data set by `r mean.steps.day - mean.steps.day.imputed` for the mean and `r median.steps - median.steps.imputed` for the median.  
+![](PA1_template_files/figure-html/hist-with-imputed-1.png)<!-- -->
+
+The mean of the imputed steps is 10766.19 and the median of the imputed steps is 10766.19.
+The imputed steps differ from the original data set by 0 for the mean and -1.1886792 for the median.  
 
 The median has changed slightly, this is evident in the changed distribution between the two histograms.
 
@@ -152,8 +182,8 @@ Make a panel plot containing a time series plot (i.e. \color{red}{\verb|type = "
 
 
 
-```{r create-daytype-variable}
 
+```r
 ds <- mutate(ds, weekday.type = ifelse(weekdays(ds$date)=="Saturday", 
                                        "weekend", 
                                        ifelse(weekdays(ds$date)=="Sunday", 
@@ -169,29 +199,29 @@ mean.steps.daytype = aggregate(ds$imputed.steps, by=list(ds$interval,
                                na.action= na.omit)
 
 mean.steps.daytype$Group.2 <- as.factor(mean.steps.daytype$Group.2)
-
 ```
 
 
 
 
-```{r plot-weekday-factor}
 
+```r
 ggplot(mean.steps.daytype, aes(x=Group.1, y=x)) +
     geom_line() + 
     facet_grid(Group.2 ~ .) +
     ggtitle("Comparing average steps per time interval between weekdays and weekends") +
     xlab("Time") + ylab("Steps") +
     theme_classic()
-
 ```
+
+![](PA1_template_files/figure-html/plot-weekday-factor-1.png)<!-- -->
 
 The main differences in activity appears to be before 9am and around 5pm. At both points there is more active on a weekday, most likely as that is when people are on the way to and from work. People are also generally more active in the afternoon on weekends then during the week.   
 An alternative presentation comparing the activity is presented below.
 
 
-```{r area-line-plot}
 
+```r
 ds.chart <- spread(mean.steps.daytype, key=Group.2, value = x)
 
 ggplot(ds.chart) +
@@ -200,6 +230,7 @@ ggplot(ds.chart) +
     ggtitle("Comparing average steps per time interval between weekdays and weekends") +
     xlab("Time") + ylab("Steps") +
     theme_classic()
-
 ```
+
+![](PA1_template_files/figure-html/area-line-plot-1.png)<!-- -->
 
